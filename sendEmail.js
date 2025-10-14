@@ -1,68 +1,69 @@
 // sendEmail.js
 
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-console.log("Loading sendEmail.js");
-console.log("SMTP config:", {
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  user: process.env.EMAIL_USER,
-});
+console.log("🟢 Loading sendEmail.js (Resend Version)");
 
-const createTransporter = () => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.zoho.com",
-    port: parseInt(process.env.SMTP_PORT) || 465,
-    secure: true, // true for port 465 (SSL)
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  transporter.verify((error, success) => {
-    if (error) console.error("SMTP verification error:", error.message);
-    else console.log("SMTP server is ready");
-  });
-
-  return transporter;
-};
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const formatObjectAsHtml = (obj) =>
   Object.entries(obj)
     .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
     .join("");
 
-export const sendCompanyAndUserEmails = async ({ formData, userEmail, userName, subjectPrefix = "" }) => {
-  const transporter = createTransporter();
-
-  const companyMail = {
-    from: process.env.EMAIL_USER,
-    to: process.env.COMPANY_EMAIL, // admin@lihaxa.com
-    subject: `${subjectPrefix} New Waitlist Signup: ${userName || userEmail}`,
-    html: `<h3>New waitlist signup</h3>${formatObjectAsHtml(formData)}`,
-  };
-
-  const userMail = {
-    from: process.env.EMAIL_USER,
-    to: userEmail, // User’s email from form
-    subject: `${subjectPrefix} Thanks for joining the waitlist`,
-    html: `<p>Hi ${userName || ""},</p>
-           <p>Thanks for joining the waitlist. We received your details:</p>
-           ${formatObjectAsHtml(formData)}
-           <p>We will be in touch soon.</p>`,
-  };
-
+/**
+ * Sends confirmation emails to both the company and the user via Resend API.
+ */
+export const sendCompanyAndUserEmails = async ({
+  formData,
+  userEmail,
+  userName,
+  subjectPrefix = "",
+}) => {
   try {
-    console.log("Sending company email to:", companyMail.to);
-    await transporter.sendMail(companyMail);
-    console.log("Company email sent");
-    console.log("Sending user email to:", userMail.to);
-    await transporter.sendMail(userMail);
-    console.log("User email sent");
-    return { ok: true };
+    // Company/admin email
+    const companyMail = {
+      from: "Lihaxa <noreply@lihaxa.com>", // must match verified domain
+      to: process.env.COMPANY_EMAIL || "admin@lihaxa.com",
+      subject: `${subjectPrefix} New Waitlist Signup: ${userName || userEmail}`,
+      html: `
+        <h2> New Waitlist Submission</h2>
+        <p>A new user just signed up on Lihaxa.</p>
+        ${formatObjectAsHtml(formData)}
+        <hr/>
+        <small>Sent automatically from Lihaxa backend</small>
+      `,
+    };
+
+    // User confirmation email
+    const userMail = {
+      from: "Lihaxa <noreply@lihaxa.com>",
+      to: userEmail,
+      subject: `${subjectPrefix} Thank You for Joining the Waitlist`,
+      html: `
+        <p>Dear ${userName || "User"},</p>
+        <p>Thank you for signing up with <strong>Lihaxa Health</strong>. 
+        Your submission was received successfully.</p>
+        <p>We'll reach out once we begin onboarding doctors and patients.</p>
+        <br/>
+        <p>Warm regards,</p>
+        <p><strong>The Lihaxa Team</strong></p>
+        <hr/>
+        <small>This is an automated message — please do not reply.</small>
+      `,
+    };
+
+    console.log(" Sending emails via Resend...");
+
+    const [companyResult, userResult] = await Promise.all([
+      resend.emails.send(companyMail),
+      resend.emails.send(userMail),
+    ]);
+
+    console.log(" Emails sent successfully via Resend");
+    return { ok: true, companyResult, userResult };
   } catch (err) {
-    console.error("Email send error:", err.message, err);
+    console.error(" Resend email error:", err);
     return { ok: false, error: err };
   }
 };
@@ -70,71 +71,3 @@ export const sendCompanyAndUserEmails = async ({ formData, userEmail, userName, 
 
 
 
-/*
-// backend/utils/sendEmail.js
-import nodemailer from "nodemailer";
-
-
-
-//console.log("📧 Using SMTP:", {
-//  host: process.env.SMTP_HOST,
-//  user: process.env.EMAIL_USER,
-//  pass: process.env.EMAIL_PASS ? "✅ loaded" : "❌ missing",
-//  company: process.env.COMPANY_EMAIL
-//});
-
-//  Create transporter (connect to Zoho SMTP)
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,      // smtp.zoho.com
-    port: process.env.SMTP_PORT,      // 465
-    secure: true,                     // true for port 465 (SSL)
-    auth: {
-      user: process.env.EMAIL_USER,   // admin@lihaxa.com
-      pass: process.env.EMAIL_PASS,   // app-specific password
-    },
-  });
-};
-
-
-
-// small helpers to build HTML/text bodies:
-const formatObjectAsHtml = (obj) =>
-  Object.entries(obj)
-    .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
-    .join("");
-
-export const sendCompanyAndUserEmails = async ({ formData, userEmail, userName, subjectPrefix = "" }) => {
-  const transporter = createTransporter();
-
-  // Email to company (all fields)
-  const companyMail = {
-    from: process.env.EMAIL_USER,
-    to: process.env.COMPANY_EMAIL,
-    subject: `${subjectPrefix} New Waitlist Signup: ${userName || userEmail}`,
-    html: `<h3>New waitlist signup</h3>${formatObjectAsHtml(formData)}`,
-  };
-
-  // Email to user (confirmation)
-  const userMail = {
-    from: process.env.EMAIL_USER,
-    to: userEmail,
-    subject: `${subjectPrefix} Thanks for joining the waitlist`,
-    html: `<p>Hi ${userName || ""},</p>
-           <p>Thanks for joining the waitlist. We received your details:</p>
-           ${formatObjectAsHtml(formData)}
-           <p>We will be in touch soon.</p>`,
-  };
-
-  try {
-    // send company email first
-    await transporter.sendMail(companyMail);
-    // then send confirmation to user
-    await transporter.sendMail(userMail);
-    return { ok: true };
-  } catch (err) {
-    console.error("Email send error:", err);
-    return { ok: false, error: err };
-  }
-};
-*/
