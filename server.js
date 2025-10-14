@@ -24,51 +24,7 @@ mongoose
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Patient signup
-app.post("/api/patient-signup", async (req, res) => {
-  try {
-    const newPatient = new Patient(req.body);
-    await newPatient.save();
-    console.log("Patient saved:", req.body);
 
-    console.log("Calling sendCompanyAndUserEmails with:", req.body);
-    const emailResult = await sendCompanyAndUserEmails({
-      formData: req.body,
-      userEmail: req.body.email,
-      userName: req.body.fullName,
-      subjectPrefix: "Lihaxa Waitlist: ",
-    });
-
-    if (!emailResult.ok) {
-      console.error("Email failed:", emailResult.error);
-      return res.status(500).json({
-        success: false,
-        message: "Patient registered, but email failed",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Patient registered successfully, emails sent",
-    });
-  } catch (err) {
-    console.error("Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-// Doctor signup
-app.post("/api/doctor-signup", async (req, res) => {
-  try {
-    const newDoctor = new Doctor(req.body);
-    await newDoctor.save();
-    console.log("Doctor saved:", req.body);
-    res.json({ success: true, message: "Doctor registered successfully" });
-  } catch (err) {
-    console.error("Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
 
 app.use("/api", waitlistRoutes);
 app.get("/", (req, res) => res.send("Lihaxa Backend is running"));
