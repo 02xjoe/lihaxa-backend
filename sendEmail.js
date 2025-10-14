@@ -1,6 +1,8 @@
 // sendEmail.js
 
 import { Resend } from "resend";
+import dotenv from 'dotenv';
+dotenv.config();
 
 console.log("🟢 Loading sendEmail.js (Resend Version)");
 
