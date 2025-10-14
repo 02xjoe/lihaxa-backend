@@ -1,13 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
+console.log("Loaded .env file");
+
 
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import { sendCompanyAndUserEmails } from "./sendEmail.js";
-import Patient from "./models/Patient.js";
-import Doctor from "./models/Doctor.js";
 import waitlistRoutes from "./routes/waitlist.js";
+
 
 
 const app = express();
