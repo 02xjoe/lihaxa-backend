@@ -8,17 +8,19 @@ import waitlistRoutes from "./routes/waitlist.js";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "https://lihaxa.netlify.app",
-      "https://www.lihaxa.com",
-      "http://localhost:5173"
-    ],
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
+
+const allowedOrigins = [
+  "https://lihaxa.netlify.app",   // your frontend live domain
+  "http://localhost:5173",        // for local dev (Vite)
+  "http://localhost:3000"         // for local dev (CRA)
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+}));
+
 
 app.use(express.json());
 
