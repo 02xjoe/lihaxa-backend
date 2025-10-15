@@ -89,6 +89,8 @@ router.post("/doctors", async (req, res) => {
         message: "This email has already joined the doctor waitlist."
       });
     }
+    
+    console.log("Doctor form data received:", req.body);
 
 
     const newDoctor = new Doctor({
