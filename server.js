@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+console.log("Loaded .env file");
 
 import express from "express";
 import cors from "cors";
