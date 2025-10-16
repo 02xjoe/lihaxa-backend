@@ -11,7 +11,7 @@ const app = express();
 
 
 const allowedOrigins = [
-  "https://lihaxa.netlify.app",   // your frontend live domain
+  "https://lihaxa.netlify.app",   // your frontend live domainn
   "http://localhost:5173",        // for local dev (Vite)
   "http://localhost:3000"         // for local dev (CRA)
 ];
