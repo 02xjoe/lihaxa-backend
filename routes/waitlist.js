@@ -69,7 +69,7 @@ router.post("/patients", async (req, res) => {
 
 
 /**
- * DOCTOR WAITLIST
+ * DOCTOR WAITLISTT
  */
 router.post("/doctors", async (req, res) => {
   try {
