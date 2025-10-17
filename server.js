@@ -12,9 +12,7 @@ const app = express();
 
 const allowedOrigins = [
   "https://lihaxa.netlify.app",   // your frontend live domainn
-  "http://localhost:5173",        // for local dev (Vite)
-  "http://localhost:5000",        
-  "http://localhost:8888"     // for local dev (CRA)
+  "http://localhost:5173"      
 ];
 
 app.use(cors({
