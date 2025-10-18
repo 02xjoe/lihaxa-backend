@@ -33,7 +33,7 @@ mongoose
     socketTimeoutMS: 45000,
     family: 4,
   })
-  .then(() => console.log("MongoDB connected successfully"))
+  .then(() => console.log("MongoDB connected successfully."))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use("/api", waitlistRoutes);

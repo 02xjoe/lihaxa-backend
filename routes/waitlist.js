@@ -24,7 +24,7 @@ const router = express.Router();
  */
 router.post("/patients", async (req, res) => {
   try {
-    const { fullName, email, ageBracket, healthcareProblem } = req.body;
+    const { fullName, email, phone, ageBracket, healthcareProblem } = req.body;
 
     if (!fullName || !email) {
       return res.status(400).json({ message: "Full name and email are required." });
@@ -39,11 +39,11 @@ router.post("/patients", async (req, res) => {
     }
 
 
-    const newPatient = new Patient({ fullName, email, ageBracket, healthcareProblem });
+    const newPatient = new Patient({ fullName, email, phone, ageBracket, healthcareProblem });
     await newPatient.save();
 
     const result = await sendCompanyAndUserEmails({
-      formData: { fullName, email, ageBracket, healthcareProblem },
+      formData: { fullName, email, phone, ageBracket, healthcareProblem },
       userEmail: email,
       userName: fullName,
       subjectPrefix: "[Waitlist] ",
